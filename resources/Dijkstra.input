@@ -1,0 +1,11 @@
+undirected
+s t 10
+s y 5
+t y 2
+y t 3
+t x 1
+y z 2
+x z 4
+x z 6
+y x 9
+z s 7
