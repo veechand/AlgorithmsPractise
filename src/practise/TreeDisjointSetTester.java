@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author moonpearl
+ * @author veechand
  *
  */
 public class TreeDisjointSetTester {
