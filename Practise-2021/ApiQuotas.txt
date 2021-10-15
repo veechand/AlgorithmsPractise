@@ -1,0 +1,107 @@
+Question: LinkedIn provides public APIs to access public member, company and jobs data (or private data with user auth). Each API call is subject to daily quotas on a per application/user basis. See https://developer.linkedin.com/docs/guide/v2/concepts/rate-limits. (for simplification, we ignore the higher limits permitted developers) Design a system to enforce these quotas. Developers are also interested in usage information. Persist the access information to facilitate reporting on a per developer and per application basis.
+
+Clarifying Questions:
+
+  Public API - Does it have user/application authentication - Yes
+  Is this only daily quotas - Will assume there can be per hour and per minute quota too. To stop abusing
+
+Requirements:
+   
+    - All the API should be monitored for usage 
+    - Access the API should be restricted if the member goes outside the quota limits. Some 4XX should be returned back
+    - Quota is for each developer or application. This can be based on subscription. Outside scope. For this discussion, we can assume it's available
+    - The quota can be at the granuality of day, hour or minute
+    - Reports on quota usage per developer
+    - Notification to the user or App owner when the quota usage increases certain limit
+    - Persisiting the monthly quota usage for certain years
+Assumption:
+ 1. Each user/application has something unique to identify
+
+Data Model:
+   - For Monitoring:
+        API has to emit certain kind of events when it's getting accessed. Event schema
+           {
+             startTimestamp: <long: unixtimestamp>
+             Path: <string>
+             userid: [AuthenticatedEntity] 
+             responseCode: <Integer>
+             latency: <long, in milliseconds>
+             callTrace: < string>
+           }
+          AuthenticatedEntity:
+             AuthenticatedUser
+             AuthenticatedApplication
+          AuthenticatedUser:
+             UserID:
+             FirstName:
+             LastName:
+             RegistrationDetails:
+             Owned Apps:
+          AuthenticatedApplication:
+             App ID:
+             Application Name:
+             availableAccessLevels:
+
+        This can emitted to something like Kafka. Instead of each API writing code to emit. We can have a library that exposes a decorator that can do the emission after calling the decorated API. We can discuss about in detail later. This event be ETLed to HDFS to further offline processing. Like error graph and understanding call trace
+
+  - There has to be two different type of DB's/tables to store the information
+      - Hourly usage - Get's frequent update and need to serve lot of QPS: 
+      		UserID: {
+      			Api: { <secondary index>
+      				<timestamp - rounded to hour>: count  - In our requirement I don't see a reason to store this for every hour. So won't go this path
+      				<timestamp - rounded to hour>: count
+      			}
+      		}
+      		UserID+API: 
+      			{
+      				Count
+      			}
+      - Daily usage: Very less frequency and will be updated only once. [MySQL]
+         - This is done by processing the offline ETL'ed data and storing that in MySQL kind of store. Challenge, we will have two system one processing the online event (Java) and the other processing the ETL'ed data (spark)
+         There are few ways to solve it, 
+          - Kafka kind of streaming allows for querying - Should explore that
+          - Spark has more frequent jobs: let's use that to run and consolidate for every minute
+          - Explore Timeseries DB, which provided higher QPS and large storage
+          - Every minute data store in MySQL like
+               User | API | Timestamp | Count
+          - Store procedure will consolidate this every day and delete the older data. Deleting of older data is again high I/O so we should tune it accordingly. Can be done using MySQL partitions and drop the partitions completely. 
+
+API: To generate report
+ 
+    Get quota details: /apiusage/quota?authenticatedEntity=<>&&entityType=<user/application>&&datatype=<hourly|daily>. We might not need the entityType if the ID is unique across entities
+    Response: {
+    	{
+    	  --- this starts from yesterday's data
+    	  daily: {
+    	    quotausage: {
+    	    	<unixtimestamp>: long,
+				<unixtimestamp>: long,
+			 }
+			 startPage = 0
+			 pageCount = 100
+    	  }
+    	  hourly: {
+    	     quotausage: {  # Only for the last 48 hours. 28 since the last date might nobe there in the daily. 
+    	     # Another way to look at this is to merge with daily usage. Assumption here is both is used for different purpose. One might be for 
+    	     something like understanding today's trend on hourly x axis and other is for daily 
+    	         <unixtimestamp>: long
+    	         <unixtimestamp>: long
+    	     }
+    	     <<no pagination>>
+    	  }   
+    	}
+    }
+    Response Code: 200 / 404 - if the authenticated entity is not found / 5XX - for server side issue / 
+
+Availability vs Consistency in case of Partitions:
+ This system will give preference to availability, even though it can be eventually consistent. Say for example if the system is not available then we can't stop or allow the system to process
+
+ High Level Design:
+  - This will be a system after authentication Layer
+  - API emits
+
+There are two options:
+ 1. The seperate layer emitting the event on behalf of the API
+ 2. The application microservice itself is emitting : Preference is this. Reason: Seperate layer emitting need to understand many things like start time, end time. Emitting can be asynchornous event like we can send response to the user and still continue to emit
+ 
+

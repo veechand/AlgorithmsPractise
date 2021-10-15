@@ -1,0 +1,120 @@
+1832128 - Sync no proper
+
+Sync Proper
+- 176130400
+- 30623024
+
+1. Read the problem statement completely
+2. 
+
+
+2021-05-13 07:25:39.000
+2021-05-13 07:25:41.678549
+{"member":"urn:li:member:234948127","action":{"com.linkedin.accountManagement.internal.CloseAction":{"reason":"DUPLICATE_ACCOUNT"}},"ARGS_REQUESTED_AT":1620915888525,"ARGS_TRACKING_ID":"\u000E\u0014¸®WÉTÆ,Âj\u0016","ARGS_MEMBER_DATA_RECEPTION_ENABLED_BY_CS":false}
+
+{"member":"urn:li:member:234948127","action":{"com.linkedin.accountManagement.internal.CloseAction":{"reason":"DUPLICATE_ACCOUNT"}},"ARGS_REQUESTED_AT":1620915888525,"ARGS_TRACKING_ID":"\u000E\u0014¸®WÉTÆ,Âj\u0016","ARGS_MEMBER_DATA_RECEPTION_ENABLED_BY_CS":false}
+
+val input = "dalids:///prod_ams.ams_state_machine_tracking"
+val readParam = Map(DaliSpark.SPLIT_SIZE -> (50 * 1024 * 1024).toString)
+val inputData = DaliSpark.createDataFrame(input, readParam)
+inputData.count()
+
+val input = "/jobs/comply/auto/emails/output/dalidataoutput-ams"
+val output = "/jobs/comply/auto/emails/output/translated-ams-1"
+val readParam = Map(DaliSpark.SPLIT_SIZE -> (50 * 1024 * 1024).toString)
+val inputData = DaliSpark.createDataFrame(input, readParam)
+val outputData = DaliSpark.createDataFrame(output, readParam)
+inputData.count()
+outputData.count()
+
+outputData.filter(col("takeoutField") === "state_machine_id").select(col("takeoutFieldValue")).show(2)
+
+val input_member_ids = inputData.select(col("memberid")).distinct()
+
+val transformationTable = "dalids:///entity_handles_mp.member_emails"
+val transformationTableInputData = DaliSpark.createDataFrame(transformationTable, readParam)
+val m2 = transformationTableInputData.select(col("memberid"))
+m2.group
+
+
+val memberOutput = outputData.filter(col("takeoutField") === "addedon")
+val memberOutput = outputData.filter(col("takeoutField") === "ams_data_export_memberId").select(col("takeoutFiledValue")).distinct.count
+outputData.select(col("memberId")).distinct.count
+memberOutput.show(10)
+
+outputData.filter(col("rowid") === "517209").show()
+
+outputData.select(col("takeoutField")).distinct().show
+outputData.select(col("rowid")).distinct().count()a
+
+input = "/jobs/comply/auto/emails/output/dalidataoutput-vsubrama/"
+val inputData = DaliSpark.createDataFrame(input, readParam)
+val memberOutput = inputData.filter(col("takeoutField") === "memberid")
+
+mapping = [
+				{  
+					domainId : INFERENCE_TAKEOUT
+              		domainMetadata : {
+                                  		   datasetName :"dalids:///prod_ams.ams_queue",
+		                                   memberIdColumn : member_id,
+		                                   memberIdFormat : MEMBER_ID,
+		                                   exportColumns : [state_machine_id, action_requested, create_date, state],
+		                                   exportFileName : emails.csv,
+		                                   domainId : INFERENCE_TAKEOUT,
+		                                   columnTransformations : [
+                                     		{
+                                     			translationNeeded : true,
+                                     			sourceColumnName : state_machine_id,
+                                     			mappingTable : {
+                                                       mappingTablePath: "dalids:///prod_ams.ams_state_machine_tracking",
+                                                       mappingTableKeyColumn: "state_machine_id",
+                                                       mappingTableValueColumn: "state_machine_type"
+                                                },
+                                     			memberFacingName: addedon
+
+                                     		}
+                                   		  ]
+                                }
+           }
+        ]
+
+
+Designed Library(For Login framework) and Frameworks (Setting)
+Ease of use and correctness
+ - EMail: Compose and Send the mail
+ - Maintanability, Adding new features, HOw well tested, How well documented
+ - Logging
+- What's the advantage of code review
+     - Naming convention
+- Patching doesn't get reviewed
+- Naming variables, modularizing the code
+- session for new engineers
+- comment your code
+- Personalization message based on Data
+- Changes comes
+- Able to update the detail when new change came
+- Restructing the code
+- Not underestimating the juniors
+
+Comments: 
+
+Good: 
+
+1. Candidate in his experience exhibited identification of common use case and developing a framework for those. Setting framework is one such example
+
+2. Candidate has taken a session of new engineers, coached them 
+
+3. Candidate is doing side projects to hone his skills
+
+Fair: 
+
+1. Quality of a product revolves around customer obsession, i.e providing easy to use features for customers . Not much on performance or quality improvement 
+
+
+Poor: 
+  1. Based on the candidate answer, the candidate has used the code review process only at a beginner level. When discussing the advantages of the code review process candidate was mentioning about things that can be automatically identified (like naming/code convention). Haven't discussed, test case coverage, reusability and other such items
+  2. No great points discussed for promoting craftmanship that's initiated by the candidate 
+
+
+
+Overall: 

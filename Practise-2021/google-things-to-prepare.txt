@@ -1,0 +1,21 @@
+Binary search
+Graphs, BFS/DFS/Flood fill
+Tree traversals
+Hash tables
+Linked list, stacks, queues, two pointers/sliding window
+Binary heaps
+	 programming
+Union find
+Ad hoc/string manipulations
+Arrays
+Recursion. Backtracking. Greedy algorithms. 
+Other good to know topics: Trie, segment trees/fenwick trees, bitmasks
+
+
+
+https://www.pramp.com/#/
+
+https://www.youtube.com/watch?v=oWbUtlUhwa8 --> Dos and Don't 
+
+Flood fill
+sliding window

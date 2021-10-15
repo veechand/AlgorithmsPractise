@@ -1,0 +1,113 @@
+
+Design a parking system
+
+Requirements:
+ - Ability to a view the slot status
+ - Ability to view the book an empty slot
+ - Premimum parking area
+ - Ability to calculate the amount to be paid
+ - Ability to pay the amount
+ - Do certain analytics :
+       - Peak reservation hours a
+       - How long a slot is reversed 
+       - Identifying premimum parking areas
+
+Assumptions:
+ - There will be a unique identity for the slot
+ - All the slots are of equal size
+ - Will start with Car parking then extend it to other sized vehicles
+ - There are million of slots with 100s of Qps per second
+ - Currently the payment is only for one slot
+
+API:
+  /parking?action=reserve - POST
+     time: <unixtimestamp> | optional 
+     entityIdentifier: "string|<entityidentier>"
+   response:
+     slot:<slotidentifier>
+    200 Ok
+    404 - If all slots are full
+    5XX - Server Error
+    4XX - Client Error
+ /parking?action=unreserve - POST
+    slot: <slotidentifier>
+    time: <unixtimestamp>
+    entityIdentifier:
+  response:
+     {
+      amount:<ss>
+      currency: <currencyIdentifier>
+     }
+
+  /parking/payment?action=calculate - POST
+  {
+   startTime:
+   endTime:
+   slotIdentifer:
+  }
+  Keeping this as a seperate resource, since tomorrow it can be having more currencies
+  more offers and other ways to calculate payment
+ /parking - GET
+    {
+      slot: <slotIdentifer>
+      status:
+    }
+    response: 
+    {
+      _links:{	
+         next:
+         prev:
+
+       },
+      slotDetails: [
+       
+         {
+         	name:
+         	location:
+         	size:
+         	status:
+         },
+         {
+
+         },
+      ],
+      start=0
+      limit=10
+    }
+  /parking - PUT - To create a new parking slot
+    {
+      <slot metadata>
+      Identier:
+      Location:
+      size:
+      premium:
+    }
+
+   Response: 200 Created
+
+Consistency vs Availability:
+
+- Consistent
+Certain modules can be made avaialble like Payment module:
+
+
+Data Model:
+
+
+Parking: Reliable SOT. All parking metadata except the status
+ This make it's low QPS for write
+ Status is frequently changing parameter 
+
+Parking status:
+   Redis Cluster:
+      Free Slots:
+      Free NonPremium Slots:
+      Occupied Slots: < Reservation Details: Slot Iden>
+      Occupied Slots
+ 
+
+
+
+
+
+EntityIdentier: Not defining now

@@ -1,0 +1,112 @@
+Problem Statement: Design a trading platform
+
+Requirements:
+  - Should be able to create an account  
+  - Should have workflow to verify the account (SMS, Govt issued ID card) (out of scope)
+  - Each account has balance, sell and buys, open trades, trade history, fund transfer
+  - Should be able to transfer funds from bank through UPI or using CC (out of scope)
+  - Should be able to list all the tickers
+  - Should be able to bookmark few tickers
+  - Should be able to buy and sell 
+  - System should support calculate the fees
+  - Should be able to view history of tickers in a candle chart
+  - Ability to support in mobile and desktop environment
+
+Assumptions:
+  - There will be a centralized exchange that can provide the current tick value
+  - History of all the tick value should be stored in our system
+  - Use can have only one wallet
+  - There will be billion of products to get data
+         - Centralized exchanges provides all the value in a single shot
+         - Stream of updates. This also will be efficient if it can be grouped. (Will opt for this). 
+           Stream can be a kafka stream or websockets (will go for kafka stream)
+Usecase:
+  - creating an account
+  - adding some funds
+  - viewing the products
+  - buying the product
+  - selling the product
+
+Questions:
+ 1. Do we also need to know the dollars exchange rate at that time? If the user want to see the product history during that period
+
+API end-points
+  - /products
+      - View - GET 
+      {
+	      product Name: "",
+	      currentPrice: "",
+	      timestamp: <unixtimestamp>
+		  histories: [{
+  			price:10
+  			timestamp: 
+		  }]
+		  currency: <CURRENCY>	      
+      }
+ - /product/buy
+       - POST
+ - /product/sell
+       - POST
+  - /account - PUT
+      {
+         name:""
+         proof: ""
+         currencyPreference: {}
+      }
+     /account - GET
+       {
+         profilestatus
+       }
+ - /funds
+ 	To add funds - PUT
+ 	   amount: 
+ 	   type:
+ 	   additionalInformation: {
+ 	      cc:
+ 	      expiry:
+ 	      cvv:
+ 	   }
+ 	View funds - GET
+ 	  {
+ 	    amount:
+ 	    currency: 
+ 	  }
+ 	To transfer back - POST 
+ 	   {
+ 	      amount:
+ 	      destinationDetails: {
+
+ 	      }
+ 	   }
+
+    /funds/history - GET
+    {
+
+    }
+
+
+Availability vs Consistency:
+  - This should be highly available and also consistent. Which will be very tough to get when there's a partition
+  - During that time we will breaking the buy/sell availaility
+         - Data should be partioned and processed such that there's a 3 active-active setups
+  - So in-turn it's a highly consistent system
+
+ High level design:
+
+
+DB Router:
+  /dbname/key
+
+DB:
+  Product DB:
+     Product DB: Document based Store. With key as the product name. Document contains
+       {
+         price:
+         FullName:
+         <other details that doesn't change frequently>
+       }
+       Price DB: Key value store something like redis - TSDB - Timestamp based DB - RRD
+          <product name> : [{}, {timestamp##value}}]
+
+       Redis is a heavy on RAM, so after some period these can be moved to File based history or MySQL based historic table and we can store roll overs
+  Account DB

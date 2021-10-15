@@ -1,0 +1,53 @@
+ Design an indexing system for a large repository of documents. Essentially, you have a staggeringly large collection of documents, and want to be able to answer questions like 'what documents have the words red and green, but not blue' in a reasonable amount of time. How do you compute and store indexes on words that you want to store
+
+ Requirements:
+  - Document indexer
+  - Can we use something like elastic search - Probably no. But we need to design one
+non-functional Requirements:
+  - Availability - High
+  - Consistency - Eventual consistency (How long it can take data to reflect)
+
+Assumptions:
+  - All documents are text documents. Are there image / media indexing ? - Only text
+  - No user based 
+
+API:
+ /index [POST]
+    {
+      "location": "azurelocation|s3location|any such"
+    }
+ /search?keywords=xyz,abc (this is xyz and abc) [GET]
+     - &case
+     - keywords=xyz|abc (this is or )
+     - start=0
+     - total=100
+
+   Response : 200 ok {
+        documents: [
+           {
+             name: "somefilex"
+             url: "http://mydocumentstore.com/somefile"
+           }
+        ],
+        pagecount: 1000
+        start:0
+        end:100
+   }
+
+Traffic:
+ Network: API will take lessed but downloading and uploading of documents are huge
+ Document Size: 500Mb
+ Number of documents: 1Billion
+ Storage:
+ Computing
+
+Document Parser:
+  ID Generator : Map between document and a generated ID
+  Parser: Splits word by word, does certain formatting like removing stop words, removing special characters and then creates a map { word to document ID}
+  Downloader is responsible for dow
+
+There are two ways to store in the cache
+  - Just the keys or the complete response
+  I will go for complete response since.. 
+
+

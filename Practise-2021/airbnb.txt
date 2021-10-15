@@ -1,0 +1,96 @@
+Design an Airbnb:
+
+Reservation System
+
+Requirement:
+  - Host should be able to post their property with price
+  - Guest should be able to view the property with price and rating
+  - Guest should be able to view the availability of a property for a choosen dates
+  - Guest should be able to reserve the property
+  - Guest should be able to cancel the reservation made
+  - Host and Guest should be able rate and recommend
+  - Payment associated with booking and cancellation (Not dealing with it now)
+  - Bunch of laws for each of the cities - OOS
+  - Recommendation system based on guest previous reservation - OOS, we can discuss if time permits
+  - Search system based on free text or based on location, type and price
+  - Login and Account related Information 
+
+Assumptions:
+ - Same account can be both host for certain property and guest for other property
+
+ API:
+  
+  To create a new login:
+     - /user : PUT
+         {
+           firstName:
+           lastName:
+           handle:
+           phoneNumber:
+           emailAddress:
+
+           location:
+           DOB:
+           Occupation
+           Blogs
+         }
+    - /user?id=<userid|handle|phonenumber> : GET
+    {
+
+    }
+  For creating of a new property:
+  	/property : PUT
+  	{
+  	  name:
+  	  location:
+  	  geolocation:
+  	  description:
+  	  images: [
+  	      streams: [Array of ByteStreams]
+  	     ]
+  	  price:
+
+  	}
+  	There can be something like /<property>/experience : PUT - To create experiences on that property
+
+  viewing property
+   /property: GET 
+   /property?location=<>&startPrice=&endPrice=<> - This is one way
+     {
+       [propertyDetails]
+       pagination:[
+       startPage:
+       endPage:
+       ]
+     }
+  SubResource: /property/recommendation - To create recommendation on that property
+  /property/recommendation : PUT To create Recommendation
+     {
+     	stars:
+     	recommendation message: " "
+     	authorid: id
+     }
+  /property?action=reserve : POST
+   {
+     startDate: <unixtimestamp>
+     endDate: <unixtimestamp>
+     number of persons:
+   }
+
+
+DB:
+
+Sharded Replicated MYSQL
+
+ Property
+ Users
+ recommendation
+
+There has to be a cache layer:
+
+- Caching per user view details <>
+- For each location top N results and their recommendations. These can be stored as blob. Memcached should be a good option since it stores cache as such
+
+
+
+https://www.airbnb.co.in/api/v3/ExploreSearch?operationName=ExploreSearch&locale=en-IN&currency=INR&variables=%7B%22request%22%3A%7B%22metadataOnly%22%3Afalse%2C%22version%22%3A%221.7.9%22%2C%22itemsPerGrid%22%3A20%2C%22tabId%22%3A%22home_tab%22%2C%22refinementPaths%22%3A%5B%22%2Fhomes%22%5D%2C%22flexibleTripDates%22%3A%5B%22august%22%2C%22july%22%5D%2C%22flexibleTripLengths%22%3A%5B%22weekend_trip%22%5D%2C%22datePickerType%22%3A%22calendar%22%2C%22placeId%22%3A%22ChIJYTN9T-plUjoRM9RjaAunYW4%22%2C%22source%22%3A%22structured_search_input_header%22%2C%22searchType%22%3A%22autocomplete_click%22%2C%22query%22%3A%22Chennai%2C%20Tamil%20Nadu%22%2C%22cdnCacheSafe%22%3Afalse%2C%22simpleSearchTreatment%22%3A%22simple_search_only%22%2C%22treatmentFlags%22%3A%5B%22storefronts_april_2021_homepage_desktop_web%22%2C%22the_greatest_outdoors_hub_web_moweb%22%2C%22flex_destinations_june_2021_launch_web_treatment%22%2C%22flexible_dates_options_extend_one_three_seven_days%22%2C%22super_date_flexibility%22%2C%22search_input_placeholder_phrases%22%5D%2C%22screenSize%22%3A%22large%22%7D%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22ba515e273989796b83ea3d5bb931c0eb817b7c9193a9bd6822f0ce9025f540ac%22%7D%7D&_cb=1953ewl0j77ybs0n3pvl40oa9t5w
